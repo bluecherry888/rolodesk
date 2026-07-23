@@ -1,35 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rolodesk — Prospecting Rolodex &amp; Calling Desk</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📇</text></svg>">
-</head>
-<body>
-<div id="app-root">
-  <header id="topbar" hidden>
-    <div class="topbar-inner">
-      <button class="brand" data-nav="#/home" title="Home">
-        <span class="brand-mark">📇</span><span class="brand-name">Rolodesk</span>
-      </button>
-      <nav class="topnav">
-        <button data-nav="#/home">Home</button>
-        <button data-nav="#/rolodex">Rolodex</button>
-        <button data-nav="#/dashboard">Dashboard</button>
-        <button data-nav="#/settings">Settings</button>
-      </nav>
-      <div class="topbar-right">
-        <span id="resume-pill" class="resume-pill" hidden></span>
-        <button id="theme-toggle" class="icon-btn" title="Toggle theme">🌙</button>
-      </div>
-    </div>
-  </header>
-  <main id="view"></main>
-</div>
-<div id="modal-root"></div>
-<div id="toast-root"></div>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rolodesk — Relationship Intelligence</title>
+  <style>
 /* ==========================================================================
    ROLODESK — Relationship Intelligence
    Visual system derived from the Vel Net digital card:
@@ -653,7 +628,35 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 }
 
 </style>
-<script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1020'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23C6A25C' font-family='Georgia,serif'>R</text></svg>" />
+</head>
+<body>
+  <div id="app-root">
+    <header id="topbar" hidden>
+      <div class="topbar-inner">
+        <button class="brand" data-nav="#/home" title="Home">
+          <span class="brand-name">Rolodesk</span>
+          <span class="brand-sub">Relationship Intelligence</span>
+        </button>
+        <nav class="topnav" aria-label="Primary">
+          <button data-nav="#/home">Home</button>
+          <button data-nav="#/rolodex">Rolodex</button>
+          <button data-nav="#/dashboard">Dashboard</button>
+          <button data-nav="#/settings">Settings</button>
+        </nav>
+        <div class="topbar-right">
+          <span id="resume-pill" class="resume-pill" hidden></span>
+          <button id="theme-toggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light or dark theme"></button>
+        </div>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+
+  <script>
 window.ROLODESK_SAMPLE_CSV = `First Name,Last Name,Job Title,Job Function,Management Level,Company Name,Website,Direct Phone Number,Mobile phone,Company HQ Phone,Email Address,LinkedIn Contact Profile URL,Industry,Employees,Revenue (in 000s USD),Person Street,Person City,Person State,Person Zip Code,Country,Time Zone
 Ali,Razavi,Chief Information Officer,IT,C-Level,407 ETR,https://www.407etr.com,+1 905-555-0142,+1 416-555-9921,+1 905-555-0100,ali.razavi@407etr.com,https://www.linkedin.com/in/ali-razavi-cio,Transportation,850,"420,000",6300 Steeles Ave W,Woodbridge,Ontario,L4H 1J1,Canada,Eastern Time
 Ali,Razavi,SVP & Chief Information Officer,IT,C-Level,407 ETR,https://407etr.com,+1 905-555-0142,,+1 905-555-0100,ali.razavi@407etr.com,https://linkedin.com/in/ali-razavi-cio,Transportation,850,"420,000",6300 Steeles Ave W,Woodbridge,ON,L4H 1J1,Canada,Eastern Time
