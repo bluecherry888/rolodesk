@@ -152,10 +152,13 @@ h1 { font-family: var(--font-display); }
 ::selection { background: var(--accent-soft); }
 ::placeholder { color: var(--text-tertiary); }
 
+/* Eyebrows are neutral by default; gold is reserved for the few moments that
+   deserve it (hero, the current conversation) — accent discipline. */
 .eyebrow {
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em;
-  color: var(--accent); font-weight: 600; font-family: var(--font-ui);
+  color: var(--text-tertiary); font-weight: 600; font-family: var(--font-ui);
 }
+.eyebrow.gold { color: var(--accent); }
 .mono { font-family: var(--font-mono); font-size: 12px; }
 .muted { color: var(--text-tertiary); }
 .soft { color: var(--text-secondary); }
@@ -282,7 +285,9 @@ select { appearance: none; background-image: linear-gradient(45deg, transparent 
 .form-grid .full { grid-column: 1 / -1; }
 
 /* ===== 7. Surfaces, panels, dividers =================================== */
-.card { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); }
+/* Three depths only: canvas (body atmosphere), working surface (flat panels,
+   border-defined), focal object (shadowed: call card, modal, drawer). */
+.card { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); }
 .card.pad { padding: 22px 24px; }
 .section-title {
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
@@ -417,8 +422,11 @@ table.tbl tbody tr:hover { background: var(--surface-hover); }
 
 /* ===== 12. Filter bar / command surface ================================ */
 .filterbar {
-  background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
-  padding: 16px; margin-bottom: 22px; box-shadow: var(--shadow-soft);
+  background: color-mix(in srgb, var(--background-deep) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 20px;
+  position: sticky; top: 64px; z-index: 30;
 }
 .filterbar .search-wrap { position: relative; flex: 1; min-width: 240px; }
 .filterbar .search-wrap input { width: 100%; padding-left: 38px; font-size: 14px; }
@@ -442,11 +450,10 @@ table.tbl tbody tr:hover { background: var(--surface-hover); }
 .rol-card .rc-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--border-subtle); font-size: 12px; }
 .avatar {
   width: 40px; height: 40px; border-radius: 50%;
-  background: var(--surface-inset); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  color: var(--accent-hover); display: grid; place-items: center;
+  background: var(--surface-inset); border: 1px solid var(--border-strong);
+  color: var(--text-secondary); display: grid; place-items: center;
   font-weight: 600; font-size: 13.5px; flex-shrink: 0; letter-spacing: 0.04em;
 }
-:root[data-theme="light"] .avatar { color: var(--accent-deep); }
 .avatar.co { border-radius: var(--radius-sm); }
 
 /* ===== 14. Calling workspace =========================================== */
@@ -627,6 +634,126 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
+/* ===== 22. Second pass: directory rows ================================= */
+.rol-list { border: 1px solid var(--border-subtle); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.rol-row {
+  display: grid; grid-template-columns: 34px 1.35fr 1fr 1.1fr 110px 110px; gap: 14px;
+  align-items: center; width: 100%; text-align: left; background: transparent; border: 0;
+  padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); cursor: pointer;
+  transition: background 0.15s; font-size: 13px; color: var(--text-secondary);
+}
+.rol-row:last-child { border-bottom: 0; }
+.rol-row:hover { background: var(--surface-hover); }
+.rol-row.selected { background: var(--accent-soft); }
+.rol-row .rr-name { font-family: var(--font-display); font-size: 15px; color: var(--text-primary); }
+.rol-row .rr-role { font-size: 12px; color: var(--text-secondary); }
+.rol-row .rr-org { font-size: 12.5px; color: var(--text-secondary); }
+.rol-row .rr-next { font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rol-row .rr-meta { font-size: 11.5px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.rol-row .avatar { width: 30px; height: 30px; font-size: 11px; }
+.rol-list-head {
+  display: grid; grid-template-columns: 34px 1.35fr 1fr 1.1fr 110px 110px; gap: 14px;
+  padding: 9px 16px; border-bottom: 1px solid var(--border-subtle);
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-tertiary); font-weight: 600;
+}
+
+/* ===== 23. Relationship drawer ========================================= */
+.drawer-scrim { position: fixed; inset: 0; background: rgba(6, 10, 20, 0.45); z-index: 90; animation: scrim-in 0.2s ease; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(430px, 94vw); z-index: 95;
+  background: var(--surface); border-left: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-focal); overflow-y: auto;
+  transform: translateX(14px); opacity: 0; transition: transform 0.22s ease, opacity 0.22s ease;
+}
+.drawer.open { transform: none; opacity: 1; }
+.drawer-head { padding: 22px 24px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; gap: 14px; align-items: flex-start; position: sticky; top: 0; background: var(--surface); z-index: 2; }
+.drawer-head .dn { font-family: var(--font-display); font-size: 22px; color: var(--text-primary); line-height: 1.15; }
+.drawer-head .dr { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+.drawer-body { padding: 20px 24px 28px; }
+.drawer-sec { margin-bottom: 20px; }
+.drawer-sec .eyebrow { display: block; margin-bottom: 8px; font-size: 10px; }
+.drawer-kv { font-size: 13px; line-height: 1.7; color: var(--text-secondary); }
+.drawer-kv b { color: var(--text-primary); font-weight: 550; }
+.drawer-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+.drawer .avatar { width: 44px; height: 44px; }
+.next-action-line { display: flex; gap: 8px; align-items: baseline; font-size: 13px; color: var(--text-primary); }
+.next-action-line .ico { color: var(--text-tertiary); }
+.next-action-line em { font-style: normal; color: var(--text-secondary); }
+
+/* ===== 24. Command palette ============================================= */
+.palette-scrim { position: fixed; inset: 0; background: rgba(6, 10, 20, 0.5); backdrop-filter: blur(4px); z-index: 120; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 20px 20px; animation: scrim-in 0.15s ease; }
+.palette { width: 100%; max-width: 560px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow-focal); overflow: hidden; animation: modal-in 0.18s ease; }
+.palette input { width: 100%; border: 0; background: transparent; padding: 16px 18px; font-size: 15px; border-bottom: 1px solid var(--border-subtle); border-radius: 0; }
+.palette input:focus { box-shadow: none; }
+.palette-list { max-height: 46vh; overflow-y: auto; padding: 6px; }
+.palette-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; padding: 10px 12px; border-radius: var(--radius-sm); font-size: 13.5px; color: var(--text-secondary); cursor: pointer; }
+.palette-item .ico { color: var(--text-tertiary); }
+.palette-item .pi-hint { margin-left: auto; font-size: 11px; color: var(--text-tertiary); }
+.palette-item.active { background: var(--accent-soft); color: var(--text-primary); }
+.palette-empty { padding: 22px 18px; font-size: 13px; color: var(--text-tertiary); font-family: var(--font-display); }
+
+/* ===== 25. Narrative history =========================================== */
+.narrative { position: relative; padding-left: 26px; }
+.narrative::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1px; background: var(--border-subtle); }
+.nv-item { position: relative; padding: 0 0 24px; }
+.nv-item::before { content: ""; position: absolute; left: -24px; top: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border-strong); }
+.nv-item.call::before { border-color: var(--accent); }
+.nv-when { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-tertiary); font-weight: 600; font-variant-numeric: tabular-nums; }
+.nv-what { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; margin-top: 5px; max-width: 62ch; }
+.nv-what b { color: var(--text-primary); font-weight: 550; }
+.nv-method { font-size: 11px; color: var(--text-tertiary); margin-left: 8px; letter-spacing: 0.04em; }
+details.audit-log { margin-top: 10px; }
+details.audit-log summary { cursor: pointer; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-tertiary); font-weight: 600; }
+details.audit-log .timeline { margin-top: 14px; }
+
+/* ===== 26. Dashboard intelligence ====================================== */
+.intel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.intel-panel { border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 22px 24px; background: var(--surface); }
+.intel-panel .eyebrow { display: block; margin-bottom: 6px; }
+.intel-hero { display: flex; align-items: baseline; gap: 12px; margin: 6px 0 4px; }
+.intel-hero .n { font-family: var(--font-display); font-size: 44px; line-height: 1; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.intel-hero .n.warn { color: var(--warning); }
+.intel-hero .n.bad { color: var(--danger); }
+.intel-hero .n.good { color: var(--success); }
+.intel-hero .l { font-size: 13px; color: var(--text-secondary); }
+.intel-sub { border-top: 1px solid var(--border-subtle); margin-top: 12px; padding-top: 4px; }
+.intel-sub .intel-row { padding: 7px 0; font-size: 12.5px; }
+.intel-sub .intel-row .intel-num { font-size: 15px; font-family: var(--font-ui); font-weight: 600; }
+.intel-note { font-size: 12px; color: var(--text-tertiary); margin-top: 10px; line-height: 1.5; }
+
+/* ===== 27. The desk (returning home) =================================== */
+.desk-date { font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--text-tertiary); font-weight: 600; }
+.desk-greet { font-family: var(--font-display); font-size: clamp(30px, 4vw, 44px); font-weight: 450; letter-spacing: -0.015em; margin-top: 10px; }
+.desk-cols { display: grid; grid-template-columns: 1.25fr 1fr; gap: 44px; margin-top: 36px; align-items: start; }
+.desk-item { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; padding: 11px 2px; border-bottom: 1px solid var(--border-subtle); font-size: 13.5px; color: var(--text-secondary); }
+.desk-item:last-child { border-bottom: 0; }
+.desk-item .di-name { color: var(--text-primary); font-weight: 550; cursor: pointer; }
+.desk-item .di-name:hover { text-decoration: underline; text-underline-offset: 3px; }
+.desk-item .di-meta { font-size: 11.5px; color: var(--text-tertiary); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.desk-primary { margin-top: 30px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.desk-secondary { font-size: 13px; }
+
+/* ===== 28. Conversation intention & call hierarchy ===================== */
+.call-card .cc-name { font-size: clamp(30px, 3.2vw, 40px); }
+.call-card .cc-avatar { border-color: var(--accent); color: var(--accent-hover); }
+:root[data-theme="light"] .call-card .cc-avatar { color: var(--accent-deep); }
+.intention {
+  border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; margin: 0 0 4px;
+}
+.intention .eyebrow { display: block; margin-bottom: 5px; font-size: 10px; }
+.intention .int-text { font-family: var(--font-display); font-size: 15.5px; line-height: 1.55; color: var(--text-primary); font-style: italic; cursor: pointer; }
+.intention .int-text.unset { color: var(--text-tertiary); }
+.intention textarea { width: 100%; margin-top: 6px; font-family: var(--font-display); font-style: italic; font-size: 14.5px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 900px) {
+  .desk-cols { grid-template-columns: 1fr; gap: 26px; }
+  .intel-grid { grid-template-columns: 1fr; }
+  .rol-row { grid-template-columns: 30px 1.3fr 1fr 84px; }
+  .rol-list-head, .rol-row .rr-next, .rol-row .rt-local { display: none; }
+  .filterbar { top: 56px; }
+  .drawer { width: 100vw; border-left: 0; }
+}
+
 </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1020'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23C6A25C' font-family='Georgia,serif'>R</text></svg>" />
 </head>
@@ -654,6 +781,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
   </div>
 
   <div id="modal-root"></div>
+  <div id="drawer-root"></div>
+  <div id="palette-root"></div>
   <div id="toast-root"></div>
 
   <script>
@@ -1137,7 +1266,22 @@ function openDB() {
       const db = e.target.result;
       ALL_STORES.forEach(s => { if (!db.objectStoreNames.contains(s)) db.createObjectStore(s, { keyPath: 'id' }); });
     };
-    req.onsuccess = e => { DB = e.target.result; resolve(DB); };
+    // An older Rolodesk tab holding the previous schema blocks the upgrade
+    // indefinitely — surface it instead of hanging on a blank page.
+    req.onblocked = () => {
+      const v = document.querySelector('#view');
+      if (v) v.innerHTML = '<div class="empty"><h3>Rolodesk is open in another tab</h3><p>An older Rolodesk tab is holding the database. Close or reload your other Rolodesk tabs, then reload this page — nothing is lost.</p></div>';
+    };
+    req.onsuccess = e => {
+      DB = e.target.result;
+      // If a future version upgrades in another tab, release our hold so it never blocks.
+      DB.onversionchange = () => {
+        try { DB.close(); } catch {}
+        const v = document.querySelector('#view');
+        if (v) v.innerHTML = '<div class="empty"><h3>Rolodesk was updated in another tab</h3><p>Reload this page to continue.</p></div>';
+      };
+      resolve(DB);
+    };
     req.onerror = e => reject(e.target.error);
   });
 }
@@ -1311,6 +1455,13 @@ function contactFrom(staged, accountId, listId) {
     originalListId: listId, sourceListIds: listId ? [listId] : [],
     createdAt: now, updatedAt: now,
   };
+}
+/* Next Meaningful Action: a first-class field, falling back to the most recent
+   recorded next step so existing data surfaces it immediately. */
+function nextActionOf(c) {
+  if (nz(c.nextAction)) return c.nextAction;
+  const acts = State.activities.filter(a => a.contactId === c.id && a.meta && nz(a.meta.nextAction));
+  return acts.length ? acts[acts.length - 1].meta.nextAction : '';
 }
 const primaryPhone = c => nz(c.directPhone) || nz(c.mobilePhone) || nz(c.companyPhone);
 const hasPhone = c => validPhone(c.directPhone) || validPhone(c.mobilePhone) || validPhone(c.companyPhone);
@@ -1570,6 +1721,8 @@ function currentRoute() {
   return { name: '/' + (path || 'home'), param: rest.join('/') };
 }
 function render() {
+  if (typeof closeDrawer === 'function') closeDrawer();
+  if (typeof closePalette === 'function') closePalette();
   const { name, param } = currentRoute();
   State.route = name;
   const view = $('#view');
@@ -1595,68 +1748,88 @@ function updateResumePill() {
 
 /* ===== 9. Views ======================================================== */
 
-/* ---- Home ---- */
+/* ---- Home: two states — first use, and the returning desk ---- */
 route('/home', (view) => {
-  const dueToday = followupsDueToday().length;
-  const overdue = followupsOverdue().length;
-  const untouched = State.contacts.filter(c => !c.lastContactedAt).length;
-  const todayActs = State.activities.filter(a => isToday(a.at));
-  const callsToday = todayActs.filter(a => a.type === 'call' && a.meta && a.meta.phase === 'completed').length;
-  const connToday = todayActs.filter(a => a.type === 'call' && /Connected|Meeting/i.test(a.outcome || '')).length;
-  const fupsToday = todayActs.filter(a => a.type === 'followup_created').length;
-  const activeAccounts = State.accounts.filter(a => a.status !== 'Closed' && a.status !== 'Do not contact').length;
-  const hasData = State.contacts.length > 0;
-  const hasSession = State.sessions.some(s => s.status === 'active');
+  if (!State.contacts.length) return renderHomeFirstUse(view);
+  renderHomeDesk(view);
+});
+function renderHomeFirstUse(view) {
   view.innerHTML = `
     <div class="hero">
-      <span class="eyebrow">Relationship Intelligence</span>
+      <span class="eyebrow gold">Relationship Intelligence</span>
       <h1>Begin with the relationship,<br>not the transaction.</h1>
-      <p>Prepare thoughtfully, move through your relationships with clarity, and preserve the context that makes every conversation meaningful.</p>
+      <p>Rolodesk is a private calling desk: bring in a prospect list, prepare thoughtfully, and preserve the context that makes every conversation meaningful. Everything stays on this device.</p>
     </div>
     <div class="pathways">
       <button class="pathway" data-nav="#/upload">
         <span class="path-ico">${icon('upload','lg')}</span>
-        <span class="eyebrow">New list</span>
+        <span class="eyebrow">Begin here</span>
         <h2>Upload a New List</h2>
-        <p>Bring in a new prospect list, review its structure, resolve duplicates, and add it to your relationship workspace.</p>
+        <p>Bring in a ZoomInfo export, review its structure, resolve duplicates, and open your relationship workspace.</p>
         <span class="path-cta">Begin an import ${icon('arrowRight')}</span>
       </button>
-      <button class="pathway" data-nav="#/rolodex">
-        <span class="path-ico">${icon('phone','lg')}</span>
-        <span class="eyebrow">${hasData ? `${State.contacts.length} people · ${State.accounts.length} organizations` : 'Your workspace'}</span>
-        <h2>Continue Calling</h2>
-        <p>Return to an existing list, resume your queue, or choose the relationships that deserve attention today.</p>
-        <span class="path-cta">Open the Rolodex ${icon('arrowRight')}</span>
-      </button>
-    </div>
-    ${hasSession ? `<div class="home-foot"><button class="btn primary lg" data-resume>${icon('play')} Resume where you left off</button></div>` : ''}
-    ${hasData ? `
-    <div class="intel">
-      <div class="intel-group">
-        <span class="eyebrow">Today</span>
-        <div class="intel-row"><span>Conversations completed</span><span class="intel-num">${callsToday}</span></div>
-        <div class="intel-row"><span>Meaningful connections</span><span class="intel-num">${connToday}</span></div>
-        <div class="intel-row"><span>Follow-ups created</span><span class="intel-num">${fupsToday}</span></div>
+      <div class="pathway" style="cursor:default">
+        <span class="path-ico">${icon('book','lg')}</span>
+        <span class="eyebrow">How it works</span>
+        <h2>A desk, not a dashboard</h2>
+        <p>Import once, then work one conversation at a time: an intention before each call, a recording and transcript if you want one, and a next meaningful action after. Nothing leaves your machine.</p>
+        <span class="path-cta" style="color:var(--text-tertiary)"><button class="btn ghost sm" data-seed style="margin:-6px 0 0 -10px">Explore with the sample list</button></span>
       </div>
-      <div class="intel-group">
-        <span class="eyebrow">Relationship field</span>
-        <div class="intel-row"><span>Active accounts</span><span class="intel-num">${activeAccounts}</span></div>
-        <div class="intel-row"><span>Untouched contacts</span><span class="intel-num ${untouched ? 'warn' : ''}">${untouched}</span></div>
-        <div class="intel-row"><span>Follow-ups due today</span><span class="intel-num ${dueToday ? 'warn' : ''}">${dueToday}</span></div>
-        <div class="intel-row"><span>Overdue follow-ups</span><span class="intel-num ${overdue ? 'bad' : ''}">${overdue}</span></div>
-      </div>
-    </div>` : `
-    <div class="intel" style="grid-template-columns:1fr">
-      <div class="intel-group">
-        <span class="eyebrow">A quiet beginning</span>
-        <p class="soft" style="margin:4px 0 14px;max-width:52ch;font-size:13.5px;line-height:1.6">Your workspace is empty. Import a ZoomInfo export to build your Rolodex — or load the sample list to see how conversations, context, and follow-ups come together.</p>
-        <button class="btn" data-seed>Load the sample list</button>
-      </div>
-    </div>`}
-  `;
-  const rb = $('[data-resume]', view); if (rb) rb.onclick = () => { const s = State.sessions.filter(x=>x.status==='active').sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0]; State.session = s; navigate('#/call'); };
+    </div>`;
   const seed = $('[data-seed]', view); if (seed) seed.onclick = seedSample;
-});
+}
+function renderHomeDesk(view) {
+  const now = new Date();
+  const hour = now.getHours();
+  const greet = hour < 12 ? 'Good morning.' : hour < 17 ? 'Good afternoon.' : 'Good evening.';
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const overdue = State.followups.filter(f => f.status === 'scheduled' && new Date(f.dueAt) < now && !isToday(f.dueAt));
+  const dueToday = followupsDueToday();
+  const attention = [...overdue, ...dueToday].slice(0, 5).map(f => ({ f, c: State.byId('contacts', f.contactId) })).filter(x => x.c);
+  const win = State.settings.preferredCallWindow;
+  const inWindow = State.contacts.filter(c => { if (c.doNotContact || !hasPhone(c)) return false; const z = resolveZone(c); const p = zoneParts(z.zone); return callBand(p.hour, p.minute, win).key === 'good'; });
+  const cutoff = Date.now() - 3 * 86400000;
+  const unnoted = State.activities.filter(a => a.type === 'call' && a.meta && a.meta.phase === 'completed' && !nz(a.notes) && !nz(a.meta.summary) && new Date(a.at).getTime() > cutoff)
+    .map(a => State.byId('contacts', a.contactId)).filter(Boolean);
+  const session = State.sessions.filter(x => x.status === 'active').sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+  const lastList = State.lists[State.lists.length - 1];
+  const sessionRemaining = session ? session.queue.length - session.cursor : 0;
+  view.innerHTML = `
+    <div style="padding-top:26px">
+      <div class="desk-date">${esc(dateStr)}</div>
+      <div class="desk-greet">${greet} ${attention.length ? `${attention.length} relationship${attention.length===1?'':'s'} ${attention.length===1?'is':'are'} waiting on you.` : 'Your desk is clear.'}</div>
+      <div class="desk-primary">
+        <button class="btn-call" data-continue>${icon('phone','lg')} <span>Continue Calling</span>${session ? `<span class="call-num">${sessionRemaining} remaining · ${esc(session.name)}</span>` : lastList ? `<span class="call-num">${esc(lastList.name)}</span>` : ''}</button>
+        <span class="desk-secondary"><a href="#/upload">Upload a new list</a> · <a href="#/rolodex">Open the Rolodex</a></span>
+      </div>
+    </div>
+    <div class="desk-cols">
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:6px">Requires attention</span>
+        ${attention.length ? attention.map(({f, c}) => `
+          <div class="desk-item"><span><span class="di-name" data-open="${c.id}">${esc(contactName(c))}</span> — ${esc(or(f.plannedAction, f.reason || 'follow-up'))}</span>
+          <span class="di-meta">${new Date(f.dueAt) < now && !isToday(f.dueAt) ? 'overdue · ' : ''}${esc(fmtDate(f.dueAt))}</span></div>`).join('')
+        : `<p class="soft" style="font-family:var(--font-display);font-size:15px;font-style:italic;margin:6px 0">No relationships require attention today.<br><span style="font-size:13px">Your desk is clear. Review the Rolodex or prepare a new calling list.</span></p>`}
+        ${unnoted.length ? `<span class="eyebrow" style="display:block;margin:22px 0 6px">Conversations without notes</span>
+          ${unnoted.slice(0,3).map(c => `<div class="desk-item"><span class="di-name" data-open="${c.id}">${esc(contactName(c))}</span><span class="di-meta">add what mattered</span></div>`).join('')}` : ''}
+      </div>
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:6px">In their calling window now</span>
+        ${inWindow.length ? inWindow.slice(0, 5).map(c => { const a = accountOf(c); return `
+          <div class="desk-item"><span><span class="di-name" data-open="${c.id}">${esc(contactName(c))}</span>${a ? ` · ${esc(accountName(a))}` : ''}</span>
+          <span class="di-meta">${esc(zoneTimeStr(resolveZone(c).zone))}</span></div>`; }).join('')
+        : `<p class="soft" style="font-size:13px;margin:6px 0">No one is inside their preferred window right now.</p>`}
+        ${lastList ? `<span class="eyebrow" style="display:block;margin:22px 0 6px">Most recent list</span>
+          <div class="desk-item"><span class="di-name" data-nav="#/rolodex/${lastList.id}">${esc(lastList.name)}</span><span class="di-meta">${esc(fmtRelative(lastList.importedAt))}</span></div>` : ''}
+      </div>
+    </div>`;
+  $('[data-continue]', view).onclick = () => {
+    if (session) { State.session = session; navigate('#/call'); }
+    else if (lastList) { startSession({ listId: lastList.id, name: 'Calling: ' + lastList.name }); navigate('#/call'); }
+    else navigate('#/rolodex');
+  };
+  $$('[data-open]', view).forEach(el => el.onclick = () => openDrawer(el.dataset.open));
+}
 
 async function seedSample() {
   try {
@@ -1892,7 +2065,7 @@ async function doSave(thenCall) {
 }
 
 /* ---- Rolodex ---- */
-const RolState = { view: 'accounts', filters: {}, listId: '' };
+const RolState = { view: 'contacts', mode: 'list', filters: {}, listId: '' };
 route('/rolodex', (view, param) => {
   if (param) RolState.listId = param;
   const f = RolState.filters;
@@ -1901,7 +2074,10 @@ route('/rolodex', (view, param) => {
   view.innerHTML = `
     <div class="page-head">
       <div><span class="eyebrow">Directory</span><h1 style="margin-top:6px">The Rolodex</h1><div class="sub">${State.contacts.length} people across ${State.accounts.length} organizations${RolState.listId?` · filtered to one list`:''}</div></div>
-      <div class="seg"><button data-view="accounts" class="${RolState.view==='accounts'?'on':''}">Accounts (${accounts.length})</button><button data-view="contacts" class="${RolState.view==='contacts'?'on':''}">Contacts (${contacts.length})</button></div>
+      <div class="row" style="gap:8px">
+        <div class="seg"><button data-view="contacts" class="${RolState.view==='contacts'?'on':''}">People (${contacts.length})</button><button data-view="accounts" class="${RolState.view==='accounts'?'on':''}">Organizations (${accounts.length})</button></div>
+        ${RolState.view==='contacts'?`<div class="seg"><button data-mode="list" class="${RolState.mode==='list'?'on':''}" title="Compact rows">Rows</button><button data-mode="cards" class="${RolState.mode==='cards'?'on':''}" title="Card view">Cards</button></div>`:''}
+      </div>
     </div>
     ${renderFilterBar()}
     <div class="row" style="justify-content:space-between;margin:4px 0 14px">
@@ -1910,6 +2086,7 @@ route('/rolodex', (view, param) => {
     </div>
     <div id="rol-body"></div>`;
   $$('[data-view]', view).forEach(b => b.onclick = () => { RolState.view = b.dataset.view; render(); });
+  $$('[data-mode]', view).forEach(b => b.onclick = () => { RolState.mode = b.dataset.mode; render(); });
   bindFilterBar(view);
   $('[data-startsession]', view).onclick = () => {
     const withPhone = contacts.filter(hasPhone);
@@ -1920,12 +2097,32 @@ route('/rolodex', (view, param) => {
   const body = $('#rol-body', view);
   if (!State.contacts.length) { body.innerHTML = emptyState('book','Your Rolodex is empty','Import a ZoomInfo list to begin building relationships.', 'Upload a list', '#/upload'); bindEmpty(body); return; }
   if (RolState.view === 'accounts') renderAccountCards(body, accounts);
-  else renderContactCards(body, contacts);
+  else if (RolState.mode === 'cards') renderContactCards(body, contacts);
+  else renderContactRows(body, contacts);
 });
+/* Compact directory rows — the default reading of the Rolodex. */
+function renderContactRows(body, contacts) {
+  if (!contacts.length) return body.innerHTML = emptyState('search','No contacts match this view','Clear one or more filters to widen the field.');
+  body.innerHTML = `<div class="rol-list">
+    <div class="rol-list-head"><span></span><span>Person</span><span>Organization</span><span>Next meaningful action</span><span style="text-align:right">Local time</span><span style="text-align:right">Last contact</span></div>
+    ${contacts.slice(0, 400).map(c => {
+      const a = accountOf(c); const z = resolveZone(c); const next = nextActionOf(c);
+      return `<button class="rol-row" data-row="${c.id}">
+        <span class="avatar">${esc(initials(contactName(c)))}</span>
+        <span><span class="rr-name">${esc(contactName(c))}</span><br><span class="rr-role">${esc(or(c.title,'—'))}</span></span>
+        <span class="rr-org">${esc(a ? accountName(a) : '—')}</span>
+        <span class="rr-next">${next ? esc(next) : '<span style="color:var(--text-tertiary)">—</span>'}</span>
+        <span class="rr-meta rt-local">${esc(zoneTimeStr(z.zone))}</span>
+        <span class="rr-meta">${c.lastContactedAt ? esc(fmtRelative(c.lastContactedAt)) : 'never'}</span>
+      </button>`; }).join('')}
+  </div>
+  ${contacts.length > 400 ? `<p class="hint center" style="margin-top:14px">Showing the first 400 of ${contacts.length}. Narrow with filters or search.</p>` : ''}`;
+  $$('[data-row]', body).forEach(r => r.onclick = () => openDrawer(r.dataset.row));
+}
 function uniqueAccounts(contacts){ const ids = new Set(contacts.map(c => c.accountId)); return State.accounts.filter(a => ids.has(a.id)); }
 
 function renderAccountCards(body, accounts) {
-  if (!accounts.length) return body.innerHTML = emptyState('search','No organizations match','Try clearing the filters.');
+  if (!accounts.length) return body.innerHTML = emptyState('search','No organizations match this view','Clear one or more filters to widen the field.');
   body.innerHTML = `<div class="roldex-grid">${accounts.map(a => {
     const cs = contactsOf(a);
     const last = cs.map(c=>c.lastContactedAt).filter(Boolean).sort().slice(-1)[0];
@@ -1946,7 +2143,7 @@ function renderAccountCards(body, accounts) {
   $$('[data-acct]', body).forEach(c => c.onclick = () => navigate('#/account/' + c.dataset.acct));
 }
 function renderContactCards(body, contacts) {
-  if (!contacts.length) return body.innerHTML = emptyState('search','No people match','Try clearing the filters.');
+  if (!contacts.length) return body.innerHTML = emptyState('search','No contacts match this view','Clear one or more filters to widen the field.');
   body.innerHTML = `<div class="roldex-grid">${contacts.slice(0, 300).map(c => {
     const a = accountOf(c); const z = resolveZone(c);
     return `<div class="rol-card" data-contact="${c.id}">
@@ -1964,7 +2161,8 @@ function renderContactCards(body, contacts) {
       <div class="rc-foot"><span class="hint">${c.lastOutcome?esc(c.lastOutcome):'—'}</span>${priorityBadge(c.priority)}</div>
     </div>`; }).join('')}</div>
     ${contacts.length>300?`<p class="hint center" style="margin-top:14px">Showing first 300 of ${contacts.length}. Narrow with filters.</p>`:''}`;
-  $$('[data-contact]', body).forEach(c => c.onclick = () => navigate('#/contact/' + c.dataset.contact));
+  // opening from the directory raises the drawer, preserving your place
+  $$('[data-contact]', body).forEach(c => c.onclick = () => openDrawer(c.dataset.contact));
 }
 /* Quiet status language: neutral by default; colour only where it carries meaning. */
 function priorityBadge(p){ const cls = p==='High'?'amber':''; return `<span class="badge ${cls} dot">${esc(p||'Medium')}</span>`; }
@@ -2052,7 +2250,7 @@ function renderContactDetail(view, id) {
       </div>
       ${nz(c.notes)?`<div class="divider"></div><div class="f"><div class="fl">Notes on file</div><div class="fv" style="white-space:pre-wrap">${esc(c.notes)}</div></div>`:''}
     </div>
-    ${nextStep?`<div class="pin-box"><b>Next meaningful action:</b> ${esc(nextStep.meta.nextAction)} <span class="hint">— set ${esc(fmtRelative(nextStep.at))}</span></div>`:''}
+    ${nextActionOf(c)?`<div class="pin-box"><b>Next meaningful action:</b> ${esc(nextActionOf(c))}${c.nextFollowUpAt?` <span class="hint">— returns ${esc(fmtDateTime(c.nextFollowUpAt))}</span>`:''}</div>`:''}
     <div class="row wrap" style="gap:8px;margin-bottom:16px">
       <button class="btn sm" data-note>${icon('note')} Add note</button>
       <button class="btn sm" data-fup>${icon('calendar')} Schedule follow-up</button>
@@ -2062,8 +2260,11 @@ function renderContactDetail(view, id) {
     ${fups.length?`<div class="section-title">Follow-up history</div>${fups.map(fupRow).join('')}`:''}
     ${others.length?`<div class="section-title">Other people at ${esc(a?accountName(a):'this account')} <span class="pill-count">${others.length}</span></div>
       <div class="tbl-wrap"><table class="tbl"><tbody>${others.map(o=>`<tr data-goto="${o.id}" style="cursor:pointer"><td><b>${esc(contactName(o))}</b></td><td>${esc(or(o.title,'—'))}</td><td>${esc(primaryPhone(o)||'—')}</td><td>${o.lastContactedAt?esc(fmtRelative(o.lastContactedAt)):'<span class="muted">never</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}
-    <div class="section-title">Complete activity history <span class="pill-count">${acts.length}</span></div>
-    <div class="card pad">${renderTimeline(acts)}</div>`;
+    <div class="section-title">Relationship history</div>
+    ${renderNarrative(acts)}
+    <details class="audit-log"><summary>Technical record (${acts.filter(a=>!NARRATIVE_TYPES.includes(a.type) || (a.type==='call'&&a.meta&&a.meta.phase==='attempt')).length})</summary>
+      ${renderTimeline(acts.filter(a=>!NARRATIVE_TYPES.includes(a.type) || (a.type==='call'&&a.meta&&a.meta.phase==='attempt')))}
+    </details>`;
   $('[data-back]', view).onclick = () => history.length > 1 ? history.back() : navigate('#/rolodex');
   $('[data-callone]', view).onclick = () => { startSession({ name:'Call '+contactName(c), queueIds:[c.id] }); navigate('#/call'); };
   $('[data-note]', view).onclick = () => addNoteDialog(c);
@@ -2113,6 +2314,11 @@ route('/call', (view) => {
             </div>
           </div>
           <div class="cc-body">
+            <div class="intention" style="margin-bottom:20px">
+              <span class="eyebrow gold">Conversation intention</span>
+              <div class="int-text ${nz(c.intention)?'':'unset'}" data-intention tabindex="0" role="button" aria-label="Edit conversation intention">${nz(c.intention)?esc(c.intention):'What is this conversation genuinely for? Click to set an intention.'}</div>
+            </div>
+            ${nextActionOf(c)?`<div class="next-action-line" style="margin-bottom:18px">${icon('arrowRight')} <span><b style="font-weight:600">Next meaningful action:</b> ${esc(nextActionOf(c))}</span></div>`:''}
             <div class="field-grid">
               ${field('Direct phone', c.directPhone)}
               ${field('Mobile', c.mobilePhone)}
@@ -2153,6 +2359,8 @@ route('/call', (view) => {
   renderQueueSide($('#queue-list', view), s);
   const callBtn = $('[data-call]', view); if (callBtn) callBtn.onclick = () => callDialog(c);
   $('[data-editcontact]', view).onclick = () => editContactDialog(c);
+  const intEl = $('[data-intention]', view);
+  if (intEl) { const editIntention = () => intentionDialog(c); intEl.onclick = editIntention; intEl.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); editIntention(); } }; }
   $('[data-notes]', view).onclick = () => navigate('#/contact/' + c.id);
   $('[data-acct]', view).onclick = () => navigate('#/account/' + c.accountId);
   $('[data-note]', view).onclick = () => addNoteDialog(c);
@@ -2241,7 +2449,7 @@ function callDialog(c) {
 function outcomeForm(c, startISO, rec) {
   const z = resolveZone(c);
   const draftSummary = rec && rec.transcript ? summarizeTranscript(rec.transcript, { contactName: contactName(c), durationSec: rec.durationSec }) : '';
-  const m = modal({ wide:true, title:'Conversation outcome — ' + contactName(c), body:`
+  const m = modal({ wide:true, title:'Close the conversation — ' + contactName(c), body:`
     <div class="hint" style="margin-bottom:14px">Began ${esc(fmtDateTime(startISO))} · their local time ${esc(zoneTimeStr(z.zone))} ${esc(zoneParts(z.zone).abbr)}${rec?` · ${Math.floor(rec.durationSec/60)}:${String(rec.durationSec%60).padStart(2,'0')} recorded`:''}</div>
     ${rec ? `
     <div class="field full" style="margin-bottom:14px"><label>Conversation summary${rec.transcript?' (drafted from the transcript — refine as needed)':''}</label>
@@ -2250,11 +2458,11 @@ function outcomeForm(c, startISO, rec) {
     </div>` : ''}
     <div class="form-grid">
       <div class="field full"><label>What happened?</label><select id="o-outcome">${OUTCOMES.map(o=>`<option>${o}</option>`).join('')}</select></div>
-      <div class="field full"><label>Notes</label><textarea id="o-notes" placeholder="What's worth remembering from this conversation…"></textarea></div>
+      <div class="field full"><label>What matters from the conversation?</label><textarea id="o-notes" style="min-height:96px" placeholder="What's worth remembering — in your own words…"></textarea></div>
       <div class="field"><label>Reached the right person?</label><select id="o-right"><option value="">—</option><option>Yes</option><option>No</option></select></div>
       <div class="field"><label>Interest level</label><select id="o-interest">${['',...INTEREST].map(i=>`<option>${i}</option>`).join('')}</select></div>
       <div class="field"><label>Objection</label><input id="o-objection" placeholder="e.g. Already has a partner"></div>
-      <div class="field"><label>What matters next?</label><input id="o-next" placeholder="e.g. Send the advisory one-pager"></div>
+      <div class="field"><label>What happens next?</label><input id="o-next" placeholder="e.g. Send the advisory one-pager"></div>
       <div class="field"><label>Referral name</label><input id="o-refname" placeholder="If they pointed you elsewhere"></div>
       <div class="field"><label>Referral role / contact</label><input id="o-refinfo"></div>
       <div class="field"><label>Contact status</label><select id="o-cstatus">${CONTACT_STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
@@ -2262,14 +2470,14 @@ function outcomeForm(c, startISO, rec) {
       <div class="field full"><label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:13px"><input type="checkbox" id="o-fup" style="width:auto"> When should this return to your attention?</label></div>
       <div class="field" id="fup-wrap" style="display:none"><label>Follow-up date &amp; time</label><input type="datetime-local" id="o-fupdt"></div>
       <div class="field" id="fup-wrap2" style="display:none"><label>Reminder</label><select id="o-reminder"><option>At time of event</option><option>15 minutes before</option><option>1 hour before</option><option>1 day before</option></select></div>
-    </div>`, footer:`<button class="btn ghost" data-cancel>Cancel</button><button class="btn primary" data-save>Preserve &amp; continue ${icon('arrowRight')}</button>` });
+    </div>`, footer:`<button class="btn ghost" data-cancel>Cancel</button><button class="btn" data-savepause>Save and pause</button><button class="btn primary" data-save>Save and continue ${icon('arrowRight')}</button>` });
   const sel = $('#o-outcome', m.root);
   sel.onchange = () => { const st = OUTCOME_STATUS[sel.value]; if (st) $('#o-cstatus', m.root).value = st;
     const wantFup = /follow-up required|Send information|Call back later|Meeting requested/i.test(sel.value); if (wantFup) { $('#o-fup', m.root).checked = true; toggleFup(); } };
   const toggleFup = () => { const on = $('#o-fup', m.root).checked; $('#fup-wrap', m.root).style.display = on?'flex':'none'; $('#fup-wrap2', m.root).style.display = on?'flex':'none'; if (on && !$('#o-fupdt', m.root).value) $('#o-fupdt', m.root).value = defaultFollowupLocal(); };
   $('#o-fup', m.root).onchange = toggleFup;
   $('[data-cancel]', m.root).onclick = m.close;
-  $('[data-save]', m.root).onclick = async () => {
+  const persist = async (pauseAfter) => {
     const endISO = nowISO();
     const outcome = sel.value;
     const g = id => nz($('#'+id, m.root).value);
@@ -2278,6 +2486,7 @@ function outcomeForm(c, startISO, rec) {
     // update contact
     const patch = { lastContactedAt: endISO, lastOutcome: outcome, callCount: (c.callCount||0)+1, status: g('o-cstatus')||c.status,
       interest: g('o-interest')||c.interest };
+    if (g('o-next')) patch.nextAction = g('o-next'); // next meaningful action, first-class
     if (outcome === 'Do not contact') patch.doNotContact = true;
     await updateContact(c, patch, { silent:true });
     // account
@@ -2304,7 +2513,10 @@ function outcomeForm(c, startISO, rec) {
     }
     m.close();
     toast('Conversation preserved', 'good');
-    if (State.session) { advanceSession(); }
+    if (State.session) {
+      advanceSession();
+      if (pauseAfter) { await saveSession(); navigate('#/home'); }
+    } else if (pauseAfter) navigate('#/home');
     render();
     // Bad number / wrong person → open the editor right away so the master list gets fixed
     // while it's fresh. The session has already advanced behind this dialog.
@@ -2317,6 +2529,8 @@ function outcomeForm(c, startISO, rec) {
       });
     }
   };
+  $('[data-save]', m.root).onclick = () => persist(false);
+  $('[data-savepause]', m.root).onclick = () => persist(true);
 }
 function defaultFollowupLocal(){ const d = new Date(Date.now()+3*86400000); d.setHours(10,0,0,0); return toLocalInput(d); }
 function toLocalInput(d){ const p = n => String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; }
@@ -2335,48 +2549,71 @@ route('/dashboard', (view) => {
   const contacts = scopeContacts();
   const untouched = contacts.filter(c => !c.lastContactedAt).length;
   const callsPerDay = avgPerDay(calls);
-  const dashRow = (label, val, cls='') => `<div class="dash-row"><span class="dl">${esc(label)}</span><span class="dv ${cls}">${val}</span></div>`;
+  const overdueN = followupsOverdue().length, dueTodayN = followupsDueToday().length;
+  const cutoff3d = Date.now() - 3 * 86400000;
+  const unnotedN = State.activities.filter(a => a.type==='call' && a.meta && a.meta.phase==='completed' && !nz(a.notes) && !nz(a.meta.summary) && new Date(a.at).getTime() > cutoff3d).length;
+  const promisedNoDate = contacts.filter(c => nz(c.nextAction) && !c.nextFollowUpAt && c.status !== 'Completed' && !c.doNotContact).length;
+  const activeConvos = contacts.filter(c => ['Active','Connected','Meeting requested','Meeting booked'].includes(c.status)).length;
+  const repeated = contacts.filter(c => (c.callCount||0) >= 2).length;
+  const movingAccounts = State.accounts.filter(a => ['Engaged','Opportunity'].includes(a.status)).length;
+  // best-performing calling window: connect rate by hour of day (min 3 conversations)
+  const byHour = {};
+  calls.forEach(a => { const h = new Date(a.at).getHours(); (byHour[h] = byHour[h] || { n: 0, conn: 0 }).n++; if (/Connected|Meeting|Send information|Referred/i.test(a.outcome||'')) byHour[h].conn++; });
+  let bestWin = null;
+  Object.entries(byHour).forEach(([h, v]) => { if (v.n >= 3) { const r = v.conn / v.n; if (!bestWin || r > bestWin.r) bestWin = { h: +h, r, n: v.n }; } });
+  const fmtHour = h => { const d = new Date(); d.setHours(h, 0); return fixMeridiem(d.toLocaleTimeString('en-US', { hour: 'numeric' })); };
+  const incomplete = contacts.filter(c => !hasPhone(c) || !nz(c.email) || !nz(c.title)).length;
+  const cutoff30 = Date.now() - 30 * 86400000;
+  const stale = contacts.filter(c => c.lastContactedAt && new Date(c.lastContactedAt).getTime() < cutoff30 && !c.nextFollowUpAt && c.status !== 'Completed' && !c.doNotContact).length;
+  const subRow = (label, val, cls='') => `<div class="intel-row"><span>${esc(label)}</span><span class="intel-num ${cls}">${val}</span></div>`;
   view.innerHTML = `
     <div class="page-head"><div>
       <span class="eyebrow">Dashboard</span>
       <h1 style="margin-top:8px">Relationship Intelligence</h1>
-      <p class="dash-lede">A clear view of the conversations moving forward, the relationships waiting for attention, and the patterns emerging across your work.</p></div>
+      <p class="dash-lede">What deserves attention, where relationships are moving, and what your calling patterns are telling you.</p></div>
       <div class="row" style="gap:8px">
         <select id="d-range" aria-label="Date range"><option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option></select>
         <select id="d-list" aria-label="List filter"><option value="">All lists</option>${State.lists.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join('')}</select>
       </div></div>
-    <div class="dash-cols">
-      <div class="dash-section">
-        <span class="eyebrow">Activity</span>
-        <div class="dash-rows" style="margin-top:12px">
-          ${dashRow('Conversations completed', calls.length)}
-          ${dashRow('Conversations today', acts.filter(a=>a.type==='call'&&isToday(a.at)&&a.meta&&a.meta.phase==='completed').length)}
-          ${dashRow('Connections', conn.length, 'good')}
-          ${dashRow('Voicemails left', vms.length)}
-          ${dashRow('Referrals received', refs.length)}
-          ${dashRow('Follow-ups created', fupsCreated.length)}
+    <div class="intel-grid">
+      <div class="intel-panel">
+        <span class="eyebrow">Needs attention now</span>
+        <div class="intel-hero"><span class="n ${overdueN?'bad':''}">${overdueN}</span><span class="l">overdue follow-up${overdueN===1?'':'s'}</span></div>
+        <div class="intel-sub">
+          ${subRow('Due today', dueTodayN, dueTodayN?'warn':'')}
+          ${subRow('Conversations without notes', unnotedN, unnotedN?'warn':'')}
+          ${subRow('Next actions with no date', promisedNoDate)}
+        </div>
+        ${!overdueN && !dueTodayN ? '<div class="intel-note" style="font-family:var(--font-display);font-style:italic">No relationships require attention today. Your desk is clear.</div>' : ''}
+      </div>
+      <div class="intel-panel">
+        <span class="eyebrow">Relationship momentum</span>
+        <div class="intel-hero"><span class="n ${activeConvos?'good':''}">${activeConvos}</span><span class="l">active conversation${activeConvos===1?'':'s'}</span></div>
+        <div class="intel-sub">
+          ${subRow('People with repeated conversations', repeated)}
+          ${subRow('Accounts moving forward', movingAccounts)}
+          ${subRow('Meetings booked', mtgBook.length, mtgBook.length?'good':'')}
+          ${subRow('Referrals received', refs.length)}
         </div>
       </div>
-      <div class="dash-section">
-        <span class="eyebrow">Momentum</span>
-        <div class="dash-rows" style="margin-top:12px">
-          ${dashRow('Connection rate', pct(conn.length, calls.length), 'good')}
-          ${dashRow('Meeting conversion', pct(mtgBook.length, calls.length))}
-          ${dashRow('Meetings requested', mtgReq.length)}
-          ${dashRow('Meetings booked', mtgBook.length, mtgBook.length?'good':'')}
-          ${dashRow('Conversations per day', callsPerDay)}
-          ${dashRow('Active accounts', State.accounts.filter(a=>a.status!=='Closed'&&a.status!=='Do not contact').length)}
+      <div class="intel-panel">
+        <span class="eyebrow">Calling patterns</span>
+        <div class="intel-hero"><span class="n">${pct(conn.length, calls.length)}</span><span class="l">connection rate · ${calls.length} conversation${calls.length===1?'':'s'}</span></div>
+        <div class="intel-sub">
+          ${subRow('Best window so far', bestWin ? fmtHour(bestWin.h) + '–' + fmtHour(bestWin.h+1) + ' (' + Math.round(bestWin.r*100) + '%)' : 'Not enough calls yet')}
+          ${subRow('Conversations per day', callsPerDay)}
+          ${subRow('Voicemails left', vms.length)}
+          ${subRow('Meeting conversion', pct(mtgBook.length, calls.length))}
         </div>
       </div>
-      <div class="dash-section">
-        <span class="eyebrow">Attention</span>
-        <div class="dash-rows" style="margin-top:12px">
-          ${dashRow('Overdue follow-ups', followupsOverdue().length, followupsOverdue().length?'bad':'')}
-          ${dashRow('Follow-ups due today', followupsDueToday().length, followupsDueToday().length?'warn':'')}
-          ${dashRow('Untouched contacts', untouched, untouched?'warn':'')}
-          ${dashRow('People in the Rolodex', contacts.length)}
-          ${dashRow('Lists imported', State.lists.length)}
-          ${dashRow('Duplicates merged', mergeCount())}
+      <div class="intel-panel">
+        <span class="eyebrow">Database health</span>
+        <div class="intel-hero"><span class="n ${untouched?'warn':''}">${untouched}</span><span class="l">untouched contact${untouched===1?'':'s'}</span></div>
+        <div class="intel-sub">
+          ${subRow('Incomplete records', incomplete)}
+          ${subRow('Going stale (30+ days, no plan)', stale, stale?'warn':'')}
+          ${subRow('Duplicates merged to date', mergeCount())}
+          ${subRow('Lists imported', State.lists.length)}
         </div>
       </div>
     </div>
@@ -2571,6 +2808,18 @@ async function toggleDNC(c) {
   logActivity('status_change', { contactId:c.id, accountId:c.accountId, notes: c.doNotContact ? 'Marked Do Not Contact' : 'Removed Do Not Contact' });
   toast('Updated','good'); render();
 }
+function intentionDialog(c) {
+  const m = modal({ title: 'Conversation intention — ' + contactName(c), body: `
+    <p class="soft" style="margin:0 0 14px;font-size:13px;line-height:1.6">A sentence that keeps the conversation honest. Consider: What am I genuinely curious about? What should I remember about this person? What could make this useful for <i>them</i>? What outcome am I refusing to force?</p>
+    <div class="field"><label>Intention</label>
+    <textarea id="int-text" style="font-family:var(--font-display);font-style:italic;font-size:14.5px;min-height:90px" placeholder="e.g. Create a genuine introduction and earn permission for a longer strategic conversation. This is not a sales call.">${esc(c.intention || '')}</textarea></div>`,
+    footer: `<button class="btn ghost" data-cancel>Cancel</button><button class="btn primary" data-save>Keep this intention</button>` });
+  $('[data-cancel]', m.root).onclick = m.close;
+  $('[data-save]', m.root).onclick = async () => {
+    await updateContact(c, { intention: nz($('#int-text', m.root).value) }, { silent: true });
+    m.close(); toast('Intention set', 'good'); render();
+  };
+}
 function addNoteDialog(c) {
   const m = modal({ title:'Add note — '+contactName(c), body:`<div class="field"><label>Note</label><textarea id="n-text" autofocus placeholder="Type your note…"></textarea></div>`,
     footer:`<button class="btn ghost" data-cancel>Cancel</button><button class="btn primary" data-save>Save note</button>` });
@@ -2632,7 +2881,10 @@ async function createFollowup(c, { dueAt, reminder, reason, plannedAction }) {
   const f = { id:uid(), contactId:c.id, accountId:c.accountId, dueAt, timezone:State.settings.userTimezone, reminder:reminder||'At time of event', reason:reason||'Follow-up', plannedAction:plannedAction||'', status:'scheduled', calendarLinked:false, createdAt:nowISO(), updatedAt:nowISO() };
   State.followups.push(f); await idbPut('followups', f);
   // nextFollowUpAt tracks the EARLIEST scheduled follow-up; don't let a later one hide a sooner callback.
-  if (!c.nextFollowUpAt || dueAt < c.nextFollowUpAt) await updateContact(c, { nextFollowUpAt: dueAt }, { silent:true });
+  const fupPatch = {};
+  if (!c.nextFollowUpAt || dueAt < c.nextFollowUpAt) fupPatch.nextFollowUpAt = dueAt;
+  if (nz(plannedAction)) fupPatch.nextAction = plannedAction;
+  if (Object.keys(fupPatch).length) await updateContact(c, fupPatch, { silent:true });
   const a = accountOf(c); if (a && (!a.nextFollowUpAt || dueAt < a.nextFollowUpAt)) await updateAccount(a, { nextFollowUpAt: dueAt });
   await logActivity('followup_created', { contactId:c.id, accountId:c.accountId, notes:`Follow-up ${fmtDateTime(dueAt)}${plannedAction?' · '+plannedAction:''}`, meta:{ followupId:f.id, nextAction:plannedAction } });
   return f;
@@ -2646,6 +2898,131 @@ async function completeFollowup(id) {
   toast('Follow-up completed','good'); render();
 }
 function bindFupRows(scope){ $$('[data-cal]', scope).forEach(b => b.onclick = () => openCalendar(State.byId('followups', b.dataset.cal))); $$('[data-done]', scope).forEach(b => b.onclick = () => completeFollowup(b.dataset.done)); }
+
+/* ===== relationship drawer ============================================ */
+function closeDrawer() { const r = $('#drawer-root'); if (r) r.innerHTML = ''; document.removeEventListener('keydown', _drawerKey); }
+function _drawerKey(e) { if (e.key === 'Escape') closeDrawer(); }
+function openDrawer(contactId) {
+  const c = State.byId('contacts', contactId);
+  if (!c) return;
+  const a = accountOf(c);
+  const z = resolveZone(c);
+  const next = nextActionOf(c);
+  const recent = State.activities.filter(x => x.contactId === c.id && ['call','note','meeting','referral','followup_created','email'].includes(x.type)).slice(-3).reverse();
+  const root = $('#drawer-root');
+  root.innerHTML = `
+    <div class="drawer-scrim" data-dclose></div>
+    <aside class="drawer" role="dialog" aria-label="Relationship — ${esc(contactName(c))}">
+      <div class="drawer-head">
+        <div class="avatar">${esc(initials(contactName(c)))}</div>
+        <div class="grow">
+          <div class="dn">${esc(contactName(c))}</div>
+          <div class="dr">${esc(or(c.title,'—'))}${a ? ' · ' + esc(accountName(a)) : ''}</div>
+          <div class="row wrap" style="gap:6px;margin-top:8px">${statusBadge(c.status)}${c.doNotContact?'<span class="badge red dot">Do not contact</span>':''}</div>
+        </div>
+        <button class="icon-btn" data-dclose aria-label="Close">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div class="drawer-sec">
+          <span class="eyebrow">Next meaningful action</span>
+          <div class="next-action-line">${icon('arrowRight')} ${next ? `<span>${esc(next)}</span>` : '<em>None set — decide what this relationship needs next.</em>'}
+            <button class="btn ghost sm" data-editnext style="margin-left:auto">${icon('pen')}<span class="sr-only"> Edit next action</span></button></div>
+          ${c.nextFollowUpAt ? `<div class="hint" style="margin-top:5px">Returns to your attention ${esc(fmtDateTime(c.nextFollowUpAt))}</div>` : ''}
+        </div>
+        <div class="drawer-sec">
+          <span class="eyebrow">Reach them</span>
+          <div class="drawer-kv">
+            ${primaryPhone(c) ? `<div><b>${esc(primaryPhone(c))}</b> · their local time ${esc(zoneTimeStr(z.zone))}</div>` : '<div>No phone on file</div>'}
+            ${c.email ? `<div><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></div>` : ''}
+            ${c.linkedin ? `<div><a href="${esc(fixUrl(c.linkedin))}" target="_blank" rel="noopener">LinkedIn profile</a></div>` : ''}
+          </div>
+        </div>
+        ${nz(c.intention) || nz(c.notes) ? `<div class="drawer-sec">
+          <span class="eyebrow">Pinned context</span>
+          <div class="drawer-kv">${nz(c.intention) ? `<div style="font-family:var(--font-display);font-style:italic">${esc(c.intention)}</div>` : ''}${nz(c.notes) ? `<div style="white-space:pre-wrap;margin-top:4px">${esc(c.notes.slice(0, 300))}</div>` : ''}</div>
+        </div>` : ''}
+        <div class="drawer-sec">
+          <span class="eyebrow">Recent history</span>
+          ${recent.length ? recent.map(x => `<div class="drawer-kv" style="margin-bottom:8px"><div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--text-tertiary)">${esc(fmtDate(x.at))}${x.outcome ? ' · ' + esc(x.outcome) : ''}</div>${nz(x.meta && x.meta.summary) ? `<div>${esc(x.meta.summary.split('\n')[0])}</div>` : nz(x.notes) ? `<div>${esc(x.notes.slice(0, 140))}</div>` : ''}</div>`).join('')
+          : '<div class="drawer-kv" style="font-family:var(--font-display);font-style:italic">Your relationship history begins here.</div>'}
+        </div>
+        <div class="drawer-actions">
+          ${hasPhone(c) && !c.doNotContact ? `<button class="btn primary" data-dcall>${icon('phone')} Begin Call</button>` : ''}
+          <button class="btn" data-dedit>${icon('pen')} Edit</button>
+          <button class="btn ghost" data-ddossier>Full dossier ${icon('arrowRight')}</button>
+        </div>
+      </div>
+    </aside>`;
+  setTimeout(() => { const d = $('.drawer', root); if (d) d.classList.add('open'); }, 15);
+  document.addEventListener('keydown', _drawerKey);
+  $$('[data-dclose]', root).forEach(el => el.onclick = closeDrawer);
+  $('[data-ddossier]', root).onclick = () => { closeDrawer(); navigate('#/contact/' + c.id); };
+  $('[data-dedit]', root).onclick = () => { closeDrawer(); editContactDialog(c); };
+  const callBtn = $('[data-dcall]', root);
+  if (callBtn) callBtn.onclick = () => { closeDrawer(); startSession({ name: 'Call ' + contactName(c), queueIds: [c.id] }); navigate('#/call'); };
+  const en = $('[data-editnext]', root);
+  if (en) en.onclick = async () => {
+    const m = modal({ title: 'Next meaningful action — ' + contactName(c), body: `
+      <div class="field"><label>What does this relationship need next?</label>
+      <input id="na-text" value="${esc(nextActionOf(c))}" placeholder="e.g. Send calendar invitation · Call after vacation · No further action"></div>`,
+      footer: `<button class="btn ghost" data-cancel>Cancel</button><button class="btn primary" data-save>Save</button>` });
+    $('[data-cancel]', m.root).onclick = m.close;
+    $('[data-save]', m.root).onclick = async () => {
+      await updateContact(c, { nextAction: nz($('#na-text', m.root).value) }, { silent: true });
+      m.close(); toast('Saved', 'good'); render(); openDrawer(c.id);
+    };
+  };
+}
+
+/* ===== command palette ================================================ */
+function closePalette() { const r = $('#palette-root'); if (r) r.innerHTML = ''; }
+function openPalette() {
+  const root = $('#palette-root');
+  if (root.children.length) return closePalette();
+  const actions = [
+    { label: 'Continue calling', icon: 'phone', run: () => { const s = State.sessions.filter(x=>x.status==='active').sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))[0]; if (s) { State.session = s; navigate('#/call'); } else navigate('#/rolodex'); } },
+    { label: 'View overdue follow-ups', icon: 'calendar', run: () => { RolState.filters = { quick: 'overdue' }; RolState.view = 'contacts'; navigate('#/rolodex'); } },
+    { label: "Open today's relationships", icon: 'clock', run: () => { RolState.filters = { quick: 'due_today' }; RolState.view = 'contacts'; navigate('#/rolodex'); } },
+    { label: 'Import a list', icon: 'upload', run: () => navigate('#/upload') },
+    { label: 'Open Dashboard', icon: 'users', run: () => navigate('#/dashboard') },
+    { label: 'Export backup', icon: 'download', run: () => exportJSON() },
+  ];
+  root.innerHTML = `
+    <div class="palette-scrim" data-pclose>
+      <div class="palette" role="dialog" aria-label="Command palette">
+        <input id="pal-q" placeholder="Find a person or company, or type a command…" autocomplete="off">
+        <div class="palette-list" id="pal-list"></div>
+      </div>
+    </div>`;
+  const q = $('#pal-q', root), list = $('#pal-list', root);
+  let items = [], active = 0;
+  const paint = () => {
+    list.innerHTML = items.length ? items.map((it, i) => `
+      <button class="palette-item ${i === active ? 'active' : ''}" data-pi="${i}">${icon(it.icon || 'search')} <span>${esc(it.label)}</span><span class="pi-hint">${esc(it.hint || '')}</span></button>`).join('')
+      : '<div class="palette-empty">Nothing matches. Try a name, a company, or a command.</div>';
+    $$('[data-pi]', list).forEach(b => b.onclick = () => { const it = items[+b.dataset.pi]; closePalette(); it.run(); });
+  };
+  const build = (term) => {
+    const t = term.trim().toLowerCase();
+    const acts = actions.filter(a => !t || a.label.toLowerCase().includes(t));
+    let people = [];
+    if (t.length >= 2) {
+      people = State.contacts.filter(c => contactName(c).toLowerCase().includes(t) || (accountOf(c) && accountName(accountOf(c)).toLowerCase().includes(t)))
+        .slice(0, 6).map(c => { const a = accountOf(c); return { label: contactName(c), hint: a ? accountName(a) : '', icon: 'users', run: () => openDrawer(c.id) }; });
+    }
+    items = [...people, ...acts.slice(0, people.length ? 4 : 8)];
+    active = 0; paint();
+  };
+  q.oninput = () => build(q.value);
+  q.onkeydown = e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, items.length - 1); paint(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); paint(); }
+    else if (e.key === 'Enter') { e.preventDefault(); const it = items[active]; if (it) { closePalette(); it.run(); } }
+    else if (e.key === 'Escape') closePalette();
+  };
+  $('.palette-scrim', root).addEventListener('mousedown', e => { if (e.target.classList.contains('palette-scrim')) closePalette(); });
+  build(''); q.focus();
+}
 
 /* ===== sessions / queue =============================================== */
 function buildQueue(contacts) {
@@ -2698,6 +3075,41 @@ function renderTimeline(acts) {
       <div class="hint">${esc(a.actor||'Me')}${a.tzContact?local:''} · ${esc(a.tzUser||'')}</div>
     </div>`; }).join('')}</div>`;
 }
+/* Narrative relationship history — human events, written as a story.
+   Technical record (imports, merges, edits, status changes) lives separately. */
+const NARRATIVE_TYPES = ['call','note','email','linkedin','referral','meeting','followup_created','followup_changed'];
+function narrativeLine(a) {
+  const first = s => nz(s).split('\n')[0];
+  switch (a.type) {
+    case 'call': {
+      const said = first(a.notes) || (a.meta && first(a.meta.summary ? a.meta.summary.split('\n').slice(1).join(' ') : '')) || '';
+      return `<b>${a.outcome ? esc(a.outcome) : 'Call placed'}.</b>${said ? ' ' + esc(said) : ''}`;
+    }
+    case 'note': return esc(first(a.notes));
+    case 'followup_created': return `<b>Follow-up set.</b> ${esc(first(a.notes))}`;
+    case 'followup_changed': return esc(first(a.notes));
+    case 'referral': return `<b>Referral.</b> ${esc(first(a.notes))}`;
+    case 'meeting': return `<b>Meeting.</b> ${esc(first(a.notes))}`;
+    default: return esc(first(a.notes));
+  }
+}
+function renderNarrative(acts) {
+  const items = acts.filter(a => NARRATIVE_TYPES.includes(a.type) && !(a.type === 'call' && a.meta && a.meta.phase === 'attempt')).slice().reverse();
+  if (!items.length) return `<p class="soft" style="font-family:var(--font-display);font-style:italic;font-size:15px">Your relationship history begins here.<br><span style="font-size:13px">Notes, calls, emails, and follow-ups will appear as the relationship develops.</span></p>`;
+  const method = { call: 'call', note: 'note', email: 'email', linkedin: 'linkedin', referral: 'referral', meeting: 'meeting', followup_created: 'follow-up', followup_changed: 'follow-up' };
+  return `<div class="narrative">${items.map(a => {
+    const d = new Date(a.at);
+    const when = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase() + ' · ' + fixMeridiem(d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })).toUpperCase();
+    const dur = a.meta && a.meta.durationSec ? ` · ${Math.max(1, Math.round(a.meta.durationSec / 60))} MIN` : '';
+    return `<div class="nv-item ${a.type === 'call' ? 'call' : ''}">
+      <div class="nv-when">${esc(when)}${dur}<span class="nv-method">· ${esc(method[a.type] || a.type)}</span></div>
+      <div class="nv-what">${narrativeLine(a)}</div>
+      ${a.meta && a.meta.summary ? `<div class="summary-block">${esc(a.meta.summary)}</div>` : ''}
+      ${a.meta && a.meta.transcript ? `<details class="tl-transcript"><summary>Transcript (${a.meta.transcript.split(/\s+/).length} words)</summary><div class="transcript-full" style="margin-top:8px">${esc(a.meta.transcript)}</div></details>` : ''}
+      ${a.meta && a.meta.recordingId ? `<div class="audio-row" data-recwrap="${esc(a.meta.recordingId)}"><button class="btn sm" data-playrec="${esc(a.meta.recordingId)}">${icon('play')} Play recording</button></div>` : ''}
+      ${a.meta && a.meta.nextAction ? `<div class="nv-what" style="margin-top:4px"><b>Next:</b> ${esc(a.meta.nextAction)}</div>` : ''}
+    </div>`; }).join('')}</div>`;
+}
 /* Load a call recording on demand and swap the button for an audio player. */
 function bindRecordingPlayback(scope) {
   $$('[data-playrec]', scope || document).forEach(btn => btn.onclick = async () => {
@@ -2717,8 +3129,8 @@ function followupsOverdue(){ return State.followups.filter(f => f.status==='sche
 function download(name, text, type='application/json'){ const b = new Blob([text], { type }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u), 1000); }
 function exportJSON(){ const data = { lists:State.lists, accounts:State.accounts, contacts:State.contacts, activities:State.activities, followups:State.followups, sessions:State.sessions, settings:State.settings, exportedAt:nowISO() }; download('rolodesk-backup-'+nowISO().slice(0,10)+'.json', JSON.stringify(data,null,2)); toast('Backup downloaded','good'); }
 function exportCSV(){
-  const cols = ['fullName','title','company','directPhone','mobilePhone','companyPhone','email','linkedin','status','priority','interest','lastContactedAt','lastOutcome','nextFollowUpAt','callCount','notes','lastUpdated','sourceLists'];
-  const rows = State.contacts.map(c => { const a = accountOf(c); return { fullName:contactName(c), title:c.title, company:a?a.name:'', directPhone:c.directPhone, mobilePhone:c.mobilePhone, companyPhone:c.companyPhone, email:c.email, linkedin:c.linkedin, status:c.status, priority:c.priority, interest:c.interest, lastContactedAt:c.lastContactedAt||'', lastOutcome:c.lastOutcome||'', nextFollowUpAt:c.nextFollowUpAt||'', callCount:c.callCount||0, notes:c.notes||'', lastUpdated:c.updatedAt||'', sourceLists:(c.sourceListIds||[]).map(listName).join('; ') }; });
+  const cols = ['fullName','title','company','directPhone','mobilePhone','companyPhone','email','linkedin','status','priority','interest','lastContactedAt','lastOutcome','nextAction','nextFollowUpAt','callCount','intention','notes','lastUpdated','sourceLists'];
+  const rows = State.contacts.map(c => { const a = accountOf(c); return { fullName:contactName(c), title:c.title, company:a?a.name:'', directPhone:c.directPhone, mobilePhone:c.mobilePhone, companyPhone:c.companyPhone, email:c.email, linkedin:c.linkedin, status:c.status, priority:c.priority, interest:c.interest, lastContactedAt:c.lastContactedAt||'', lastOutcome:c.lastOutcome||'', nextAction:nextActionOf(c), nextFollowUpAt:c.nextFollowUpAt||'', callCount:c.callCount||0, intention:c.intention||'', notes:c.notes||'', lastUpdated:c.updatedAt||'', sourceLists:(c.sourceListIds||[]).map(listName).join('; ') }; });
   const csv = [cols.join(','), ...rows.map(r => cols.map(k => `"${String(r[k]??'').replace(/"/g,'""')}"`).join(','))].join('\n');
   download('rolodesk-contacts-'+nowISO().slice(0,10)+'.csv', csv, 'text/csv'); toast('Contacts exported','good');
 }
@@ -2758,6 +3170,9 @@ function bindEmpty(scope){ $$('[data-nav]', scope).forEach(b => b.onclick = () =
 function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); $('#theme-toggle').innerHTML = icon(t==='dark'?'sun':'moon'); }
 function bindGlobalNav() {
   document.body.addEventListener('click', e => { const el = e.target.closest('[data-nav]'); if (el) { e.preventDefault(); navigate(el.dataset.nav); } });
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPalette(); }
+  });
   $('#theme-toggle').onclick = () => { const t = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark'; saveSettings({ theme:t }); applyTheme(t); };
 }
 window.addEventListener('hashchange', render);
